@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <section class="card login-card">
+    <h1>Seller Login</h1>
+    <form method="post" class="form">
+      <label class="field">
+        <span>Username</span>
+        <input type="text" name="username" autocomplete="username" required>
+      </label>
+      <label class="field">
+        <span>Password</span>
+        <input type="password" name="password" autocomplete="current-password" required>
+      </label>
+      <button type="submit" class="btn primary">Login</button>
+    </form>
+  </section>
+{% endblock %}

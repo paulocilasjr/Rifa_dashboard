@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <section class="card">
+    <div class="section-header">
+      <h1>Audit Log</h1>
+      <a class="btn" href="{{ url_for('admin_dashboard') }}">Back to Dashboard</a>
+    </div>
+
+    <form method="get" class="form filter-grid">
+      <label class="field">
+        <span>Action</span>
+        <select name="action">
+          <option value="">Any</option>
+          {% for item in actions %}
+            <option value="{{ item.action }}" {% if item.action == action %}selected{% endif %}>{{ item.action }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label class="field">
+        <span>Actor</span>
+        <select name="actor">
+          <option value="">Any</option>
+          {% for user in users %}
+            <option value="{{ user.username }}" {% if user.username == actor %}selected{% endif %}>{{ user.username }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label class="field">
+        <span>Seller</span>
+        <select name="seller">
+          <option value="">Any</option>
+          {% for user in users %}
+            <option value="{{ user.username }}" {% if user.username == seller %}selected{% endif %}>{{ user.username }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label class="field">
+        <span>Number</span>
+        <input type="number" name="number" min="1" max="{{ max_number }}" value="{{ number or '' }}" placeholder="e.g. 1200">
+      </label>
+      <label class="field">
+        <span>Date From (UTC)</span>
+        <input type="text" name="date_from" value="{{ date_from }}" placeholder="YYYY-MM-DD">
+      </label>
+      <label class="field">
+        <span>Date To (UTC)</span>
+        <input type="text" name="date_to" value="{{ date_to }}" placeholder="YYYY-MM-DD">
+      </label>
+      <div class="form-actions">
+        <button type="submit" class="btn primary">Apply Filters</button>
+        <a class="btn" href="{{ url_for('admin_audit') }}">Clear</a>
+      </div>
+    </form>
+  </section>
+
+  <section class="card">
+    <div class="section-header">
+      <h2>Results</h2>
+      <div class="small">Total: {{ total }} | Page {{ page }} of {{ page_count }}</div>
+    </div>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Action</th>
+          <th>Number</th>
+          <th>Actor</th>
+          <th>Seller</th>
+          <th>Time (UTC)</th>
+          <th>Details</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+          <tr>
+            <td>{{ row.action }}</td>
+            <td>{{ row.number or '-' }}</td>
+            <td>{{ row.actor_username or '-' }}</td>
+            <td>{{ row.seller_username or '-' }}</td>
+            <td>{{ row.created_at }}</td>
+            <td>
+              {% if row.details %}
+                <details>
+                  <summary>View</summary>
+                  <pre class="code-block">{{ row.details }}</pre>
+                </details>
+              {% else %}
+                -
+              {% endif %}
+            </td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="6">No audit entries found.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="page-controls">
+      <a class="btn" href="{{ url_for('admin_audit', page=1, **filters) }}">First</a>
+      <a class="btn" href="{{ url_for('admin_audit', page=page-1 if page > 1 else 1, **filters) }}">Prev</a>
+      <span>Page {{ page }} of {{ page_count }}</span>
+      <a class="btn" href="{{ url_for('admin_audit', page=page+1 if page < page_count else page_count, **filters) }}">Next</a>
+      <a class="btn" href="{{ url_for('admin_audit', page=page_count, **filters) }}">Last</a>
+    </div>
+  </section>
+{% endblock %}

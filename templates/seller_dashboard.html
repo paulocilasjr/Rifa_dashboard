@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <section class="card stat-card">
+    <h1>Seller Dashboard</h1>
+    <div class="stats">
+      <div>
+        <div class="stat-label">Total Sold</div>
+        <div class="stat-value">{{ total_sold }}</div>
+      </div>
+      <div>
+        <div class="stat-label">Active Reservations</div>
+        <div class="stat-value">{{ total_reserved }}</div>
+      </div>
+      <div>
+        <div class="stat-label">Current Range</div>
+        <div class="stat-value">{{ start }} - {{ end }}</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Find a Number</h2>
+    <form method="get" class="form inline-form">
+      <label class="field">
+        <span>Number (1 - {{ max_number }})</span>
+        <input type="number" name="number" min="1" max="{{ max_number }}" placeholder="Search by number">
+      </label>
+      <button type="submit" class="btn">Search</button>
+    </form>
+
+    {% if search_result %}
+      <div class="search-result">
+        <strong>Number {{ search_result.number }}</strong>
+        {% if search_result.status == 'sold' %}
+          <span class="pill sold">Sold</span>
+          <div class="small">Buyer: {{ search_result.buyer_name }} | Phone: {{ search_result.buyer_phone }}</div>
+          <div class="small">Sold at: {{ search_result.sold_at }}</div>
+          {% if search_result.can_edit %}
+            <form method="post" action="{{ url_for('edit_sale', number=search_result.number) }}" class="inline-form">
+              <input type="text" name="buyer_name" placeholder="Buyer name" required>
+              <input type="text" name="buyer_phone" placeholder="Buyer phone" required>
+              <button type="submit" class="btn">Edit Sale</button>
+            </form>
+            <form method="post" action="{{ url_for('void_sale', number=search_result.number) }}" class="inline-form">
+              <button type="submit" class="btn danger">Void Sale</button>
+            </form>
+          {% endif %}
+        {% elif search_result.status == 'reserved' %}
+          <span class="pill reserved">Reserved</span>
+          {% if search_result.reserved_by_me %}
+            <div class="small">Reserved by you until {{ search_result.reserved_until }}</div>
+          {% else %}
+            <div class="small">Reserved by another seller until {{ search_result.reserved_until }}</div>
+          {% endif %}
+        {% else %}
+          <span class="pill available">Available</span>
+        {% endif %}
+      </div>
+    {% endif %}
+  </section>
+
+  <section class="card">
+    <h2>Select Numbers to Reserve or Sell</h2>
+    <div class="page-controls">
+      <a class="btn" href="{{ url_for('seller_dashboard', page=1) }}">First</a>
+      <a class="btn" href="{{ url_for('seller_dashboard', page=page-1 if page > 1 else 1) }}">Prev</a>
+      <span>Page {{ page }} of {{ page_count }}</span>
+      <a class="btn" href="{{ url_for('seller_dashboard', page=page+1 if page < page_count else page_count) }}">Next</a>
+      <a class="btn" href="{{ url_for('seller_dashboard', page=page_count) }}">Last</a>
+    </div>
+
+    <form method="post" class="form">
+      <div class="numbers-grid">
+        {% for item in numbers %}
+          <label class="number-item
+            {% if item.sold %}is-sold{% endif %}
+            {% if item.reserved_by_other %}is-reserved{% endif %}
+            {% if item.reserved_by_me %}is-reserved-me{% endif %}
+          ">
+            <input
+              type="checkbox"
+              name="numbers"
+              value="{{ item.number }}"
+              {% if item.sold or item.reserved_by_other %}disabled{% endif %}
+            >
+            <span>{{ item.number }}</span>
+          </label>
+        {% endfor %}
+      </div>
+
+      <div class="selection-summary">
+        <span>Selected: <strong id="selected-count">0</strong></span>
+        <span id="selected-preview" class="small"></span>
+      </div>
+
+      <div class="buyer-fields">
+        <label class="field">
+          <span>Buyer Name (required for selling)</span>
+          <input type="text" name="buyer_name">
+        </label>
+        <label class="field">
+          <span>Buyer Phone (required for selling)</span>
+          <input type="text" name="buyer_phone">
+        </label>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" name="action" value="reserve" class="btn">Reserve</button>
+        <button type="submit" name="action" value="sell" class="btn primary">Confirm Sale</button>
+      </div>
+      <div class="small">Reservations last {{ reserve_minutes }} minutes and prevent other sellers from selling the same numbers.</div>
+    </form>
+  </section>
+
+  <section class="card">
+    <h2>Your Active Reservations</h2>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Number</th>
+          <th>Reserved Until (UTC)</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for reservation in my_reservations %}
+          <tr>
+            <td>{{ reservation.number }}</td>
+            <td>{{ reservation.reserved_until }}</td>
+            <td>
+              <form method="post" action="{{ url_for('release_reservation', number=reservation.number) }}">
+                <button type="submit" class="btn">Release</button>
+              </form>
+            </td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="3">No active reservations.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+{% endblock %}

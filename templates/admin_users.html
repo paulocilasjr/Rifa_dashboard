@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <section class="card">
+    <div class="section-header">
+      <h1>Manage Sellers</h1>
+      <a class="btn" href="{{ url_for('admin_dashboard') }}">Back to Dashboard</a>
+    </div>
+
+    <form method="post" class="form">
+      <h2>Create Seller</h2>
+      <label class="field">
+        <span>Username</span>
+        <input type="text" name="username" required>
+      </label>
+      <label class="field">
+        <span>Temporary Password</span>
+        <input type="text" name="password" required>
+      </label>
+      <button type="submit" class="btn primary">Create Seller</button>
+    </form>
+  </section>
+
+  <section class="card">
+    <h2>Existing Sellers</h2>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Username</th>
+          <th>Created At</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for seller in sellers %}
+          <tr>
+            <td>{{ seller.username }}</td>
+            <td>{{ seller.created_at }}</td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="2">No sellers created.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+{% endblock %}

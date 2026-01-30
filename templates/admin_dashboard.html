@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <section class="card stat-card">
+    <h1>Superuser Dashboard</h1>
+    <div class="stats">
+      <div>
+        <div class="stat-label">Total Sold</div>
+        <div class="stat-value">{{ total_sold }}</div>
+      </div>
+      <div>
+        <div class="stat-label">Reserved</div>
+        <div class="stat-value">{{ total_reserved }}</div>
+      </div>
+      <div>
+        <div class="stat-label">Remaining</div>
+        <div class="stat-value">{{ total_remaining }}</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Search a Number</h2>
+    <form method="get" class="form inline-form">
+      <label class="field">
+        <span>Number</span>
+        <input type="number" name="number" min="1" max="{{ max_number }}" placeholder="e.g. 1200">
+      </label>
+      <button type="submit" class="btn">Search</button>
+    </form>
+
+    {% if search_sale %}
+      {% if search_sale.not_found %}
+        <div class="search-result">Number {{ search_sale.number }} is available.</div>
+      {% elif search_sale.status == 'reserved' %}
+        <div class="search-result">
+          <strong>Number {{ search_sale.number }}</strong>
+          <span class="pill reserved">Reserved</span>
+          <div class="small">Reserved by: {{ search_sale.seller_username }}</div>
+          <div class="small">Reserved until: {{ search_sale.reserved_until }}</div>
+          <form method="post" action="{{ url_for('release_reservation', number=search_sale.number) }}" class="inline-form">
+            <button type="submit" class="btn">Release Reservation</button>
+          </form>
+        </div>
+      {% else %}
+        <div class="search-result">
+          <strong>Number {{ search_sale.number }}</strong>
+          <span class="pill sold">Sold</span>
+          <div class="small">Seller: {{ search_sale.seller_username }}</div>
+          <div class="small">Buyer: {{ search_sale.buyer_name }} | Phone: {{ search_sale.buyer_phone }}</div>
+          <div class="small">Sold at: {{ search_sale.sold_at }}</div>
+          <form method="post" action="{{ url_for('edit_sale', number=search_sale.number) }}" class="inline-form">
+            <input type="text" name="buyer_name" placeholder="Buyer name" required>
+            <input type="text" name="buyer_phone" placeholder="Buyer phone" required>
+            <button type="submit" class="btn">Edit Sale</button>
+          </form>
+          <form method="post" action="{{ url_for('void_sale', number=search_sale.number) }}" class="inline-form">
+            <button type="submit" class="btn danger">Void Sale</button>
+          </form>
+        </div>
+      {% endif %}
+    {% endif %}
+  </section>
+
+  <section class="card">
+    <div class="section-header">
+      <h2>Seller Performance</h2>
+      <a class="btn" href="{{ url_for('admin_users') }}">Manage Sellers</a>
+    </div>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Seller</th>
+          <th>Numbers Sold</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for seller in seller_stats %}
+          <tr>
+            <td>{{ seller.username }}</td>
+            <td>{{ seller.sold_count }}</td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="2">No sellers yet.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="card">
+    <h2>Recent Sales</h2>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Number</th>
+          <th>Seller</th>
+          <th>Buyer</th>
+          <th>Phone</th>
+          <th>Sold At</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for sale in recent_sales %}
+          <tr>
+            <td>{{ sale.number }}</td>
+            <td>{{ sale.seller_username }}</td>
+            <td>{{ sale.buyer_name }}</td>
+            <td>{{ sale.buyer_phone }}</td>
+            <td>{{ sale.sold_at }}</td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="5">No sales yet.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="card">
+    <div class="section-header">
+      <h2>Recent Audit Log</h2>
+      <a class="btn" href="{{ url_for('admin_audit') }}">Full Audit Log</a>
+    </div>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Action</th>
+          <th>Number</th>
+          <th>Actor</th>
+          <th>Time (UTC)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in recent_audit %}
+          <tr>
+            <td>{{ item.action }}</td>
+            <td>{{ item.number or '-' }}</td>
+            <td>{{ item.actor_username or 'system' }}</td>
+            <td>{{ item.created_at }}</td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="4">No audit entries yet.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+{% endblock %}
