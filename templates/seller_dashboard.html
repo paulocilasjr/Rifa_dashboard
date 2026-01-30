@@ -2,72 +2,72 @@
 
 {% block content %}
   <section class="card stat-card">
-    <h1>Seller Dashboard</h1>
+    <h1>Painel do Vendedor</h1>
     <div class="stats">
       <div>
-        <div class="stat-label">Total Sold</div>
+        <div class="stat-label">Total Vendido</div>
         <div class="stat-value">{{ total_sold }}</div>
       </div>
       <div>
-        <div class="stat-label">Active Reservations</div>
+        <div class="stat-label">Reservas Ativas</div>
         <div class="stat-value">{{ total_reserved }}</div>
       </div>
       <div>
-        <div class="stat-label">Current Range</div>
+        <div class="stat-label">Intervalo Atual</div>
         <div class="stat-value">{{ start }} - {{ end }}</div>
       </div>
     </div>
   </section>
 
   <section class="card">
-    <h2>Find a Number</h2>
+    <h2>Buscar Número</h2>
     <form method="get" class="form inline-form">
       <label class="field">
-        <span>Number (1 - {{ max_number }})</span>
-        <input type="number" name="number" min="1" max="{{ max_number }}" placeholder="Search by number">
+        <span>Número (1 - {{ max_number }})</span>
+        <input type="number" name="number" min="1" max="{{ max_number }}" placeholder="Buscar por número">
       </label>
-      <button type="submit" class="btn">Search</button>
+      <button type="submit" class="btn">Buscar</button>
     </form>
 
     {% if search_result %}
       <div class="search-result">
-        <strong>Number {{ search_result.number }}</strong>
+        <strong>Número {{ search_result.number }}</strong>
         {% if search_result.status == 'sold' %}
-          <span class="pill sold">Sold</span>
-          <div class="small">Buyer: {{ search_result.buyer_name }} | Phone: {{ search_result.buyer_phone }}</div>
-          <div class="small">Sold at: {{ search_result.sold_at }}</div>
+          <span class="pill sold">Vendido</span>
+          <div class="small">Comprador: {{ search_result.buyer_name }} | Telefone: {{ search_result.buyer_phone }}</div>
+          <div class="small">Vendido em: {{ search_result.sold_at }}</div>
           {% if search_result.can_edit %}
             <form method="post" action="{{ url_for('edit_sale', number=search_result.number) }}" class="inline-form">
-              <input type="text" name="buyer_name" placeholder="Buyer name" required>
-              <input type="text" name="buyer_phone" placeholder="Buyer phone" required>
-              <button type="submit" class="btn">Edit Sale</button>
+              <input type="text" name="buyer_name" placeholder="Nome do comprador" required>
+              <input type="text" name="buyer_phone" placeholder="Telefone do comprador" required>
+              <button type="submit" class="btn">Editar Venda</button>
             </form>
             <form method="post" action="{{ url_for('void_sale', number=search_result.number) }}" class="inline-form">
-              <button type="submit" class="btn danger">Void Sale</button>
+              <button type="submit" class="btn danger">Cancelar Venda</button>
             </form>
           {% endif %}
         {% elif search_result.status == 'reserved' %}
-          <span class="pill reserved">Reserved</span>
+          <span class="pill reserved">Reservado</span>
           {% if search_result.reserved_by_me %}
-            <div class="small">Reserved by you until {{ search_result.reserved_until }}</div>
+            <div class="small">Reservado por você até {{ search_result.reserved_until }}</div>
           {% else %}
-            <div class="small">Reserved by another seller until {{ search_result.reserved_until }}</div>
+            <div class="small">Reservado por outro vendedor até {{ search_result.reserved_until }}</div>
           {% endif %}
         {% else %}
-          <span class="pill available">Available</span>
+          <span class="pill available">Disponível</span>
         {% endif %}
       </div>
     {% endif %}
   </section>
 
   <section class="card">
-    <h2>Select Numbers to Reserve or Sell</h2>
+    <h2>Selecionar Números para Reservar ou Vender</h2>
     <div class="page-controls">
-      <a class="btn" href="{{ url_for('seller_dashboard', page=1) }}">First</a>
-      <a class="btn" href="{{ url_for('seller_dashboard', page=page-1 if page > 1 else 1) }}">Prev</a>
-      <span>Page {{ page }} of {{ page_count }}</span>
-      <a class="btn" href="{{ url_for('seller_dashboard', page=page+1 if page < page_count else page_count) }}">Next</a>
-      <a class="btn" href="{{ url_for('seller_dashboard', page=page_count) }}">Last</a>
+      <a class="btn" href="{{ url_for('seller_dashboard', page=1) }}">Primeira</a>
+      <a class="btn" href="{{ url_for('seller_dashboard', page=page-1 if page > 1 else 1) }}">Anterior</a>
+      <span>Página {{ page }} de {{ page_count }}</span>
+      <a class="btn" href="{{ url_for('seller_dashboard', page=page+1 if page < page_count else page_count) }}">Próxima</a>
+      <a class="btn" href="{{ url_for('seller_dashboard', page=page_count) }}">Última</a>
     </div>
 
     <form method="post" class="form">
@@ -90,37 +90,37 @@
       </div>
 
       <div class="selection-summary">
-        <span>Selected: <strong id="selected-count">0</strong></span>
+        <span>Selecionados: <strong id="selected-count">0</strong></span>
         <span id="selected-preview" class="small"></span>
       </div>
 
       <div class="buyer-fields">
         <label class="field">
-          <span>Buyer Name (required for selling)</span>
+          <span>Nome do Comprador (obrigatório para vender)</span>
           <input type="text" name="buyer_name">
         </label>
         <label class="field">
-          <span>Buyer Phone (required for selling)</span>
+          <span>Telefone do Comprador (obrigatório para vender)</span>
           <input type="text" name="buyer_phone">
         </label>
       </div>
 
       <div class="form-actions">
-        <button type="submit" name="action" value="reserve" class="btn">Reserve</button>
-        <button type="submit" name="action" value="sell" class="btn primary">Confirm Sale</button>
+        <button type="submit" name="action" value="reserve" class="btn">Reservar</button>
+        <button type="submit" name="action" value="sell" class="btn primary">Confirmar Venda</button>
       </div>
-      <div class="small">Reservations last {{ reserve_minutes }} minutes and prevent other sellers from selling the same numbers.</div>
+      <div class="small">Reservas duram {{ reserve_minutes }} minutos e impedem que outros vendedores vendam os mesmos números.</div>
     </form>
   </section>
 
   <section class="card">
-    <h2>Your Active Reservations</h2>
+    <h2>Suas Reservas Ativas</h2>
     <table class="table">
       <thead>
         <tr>
-          <th>Number</th>
-          <th>Reserved Until (UTC)</th>
-          <th>Action</th>
+          <th>Número</th>
+          <th>Reservado Até (UTC)</th>
+          <th>Ação</th>
         </tr>
       </thead>
       <tbody>
@@ -130,13 +130,13 @@
             <td>{{ reservation.reserved_until }}</td>
             <td>
               <form method="post" action="{{ url_for('release_reservation', number=reservation.number) }}">
-                <button type="submit" class="btn">Release</button>
+                <button type="submit" class="btn">Liberar</button>
               </form>
             </td>
           </tr>
         {% else %}
           <tr>
-            <td colspan="3">No active reservations.</td>
+            <td colspan="3">Nenhuma reserva ativa.</td>
           </tr>
         {% endfor %}
       </tbody>

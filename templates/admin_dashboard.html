@@ -2,60 +2,60 @@
 
 {% block content %}
   <section class="card stat-card">
-    <h1>Superuser Dashboard</h1>
+    <h1>Painel do Superusuário</h1>
     <div class="stats">
       <div>
-        <div class="stat-label">Total Sold</div>
+        <div class="stat-label">Total Vendido</div>
         <div class="stat-value">{{ total_sold }}</div>
       </div>
       <div>
-        <div class="stat-label">Reserved</div>
+        <div class="stat-label">Reservado</div>
         <div class="stat-value">{{ total_reserved }}</div>
       </div>
       <div>
-        <div class="stat-label">Remaining</div>
+        <div class="stat-label">Restante</div>
         <div class="stat-value">{{ total_remaining }}</div>
       </div>
     </div>
   </section>
 
   <section class="card">
-    <h2>Search a Number</h2>
+    <h2>Buscar Número</h2>
     <form method="get" class="form inline-form">
       <label class="field">
-        <span>Number</span>
-        <input type="number" name="number" min="1" max="{{ max_number }}" placeholder="e.g. 1200">
+        <span>Número</span>
+        <input type="number" name="number" min="1" max="{{ max_number }}" placeholder="ex.: 1200">
       </label>
-      <button type="submit" class="btn">Search</button>
+      <button type="submit" class="btn">Buscar</button>
     </form>
 
     {% if search_sale %}
       {% if search_sale.not_found %}
-        <div class="search-result">Number {{ search_sale.number }} is available.</div>
+        <div class="search-result">Número {{ search_sale.number }} está disponível.</div>
       {% elif search_sale.status == 'reserved' %}
         <div class="search-result">
-          <strong>Number {{ search_sale.number }}</strong>
-          <span class="pill reserved">Reserved</span>
-          <div class="small">Reserved by: {{ search_sale.seller_username }}</div>
-          <div class="small">Reserved until: {{ search_sale.reserved_until }}</div>
+          <strong>Número {{ search_sale.number }}</strong>
+          <span class="pill reserved">Reservado</span>
+          <div class="small">Reservado por: {{ search_sale.seller_username }}</div>
+          <div class="small">Reservado até: {{ search_sale.reserved_until }}</div>
           <form method="post" action="{{ url_for('release_reservation', number=search_sale.number) }}" class="inline-form">
-            <button type="submit" class="btn">Release Reservation</button>
+            <button type="submit" class="btn">Liberar Reserva</button>
           </form>
         </div>
       {% else %}
         <div class="search-result">
-          <strong>Number {{ search_sale.number }}</strong>
-          <span class="pill sold">Sold</span>
-          <div class="small">Seller: {{ search_sale.seller_username }}</div>
-          <div class="small">Buyer: {{ search_sale.buyer_name }} | Phone: {{ search_sale.buyer_phone }}</div>
-          <div class="small">Sold at: {{ search_sale.sold_at }}</div>
+          <strong>Número {{ search_sale.number }}</strong>
+          <span class="pill sold">Vendido</span>
+          <div class="small">Vendedor: {{ search_sale.seller_username }}</div>
+          <div class="small">Comprador: {{ search_sale.buyer_name }} | Telefone: {{ search_sale.buyer_phone }}</div>
+          <div class="small">Vendido em: {{ search_sale.sold_at }}</div>
           <form method="post" action="{{ url_for('edit_sale', number=search_sale.number) }}" class="inline-form">
-            <input type="text" name="buyer_name" placeholder="Buyer name" required>
-            <input type="text" name="buyer_phone" placeholder="Buyer phone" required>
-            <button type="submit" class="btn">Edit Sale</button>
+            <input type="text" name="buyer_name" placeholder="Nome do comprador" required>
+            <input type="text" name="buyer_phone" placeholder="Telefone do comprador" required>
+            <button type="submit" class="btn">Editar Venda</button>
           </form>
           <form method="post" action="{{ url_for('void_sale', number=search_sale.number) }}" class="inline-form">
-            <button type="submit" class="btn danger">Void Sale</button>
+            <button type="submit" class="btn danger">Cancelar Venda</button>
           </form>
         </div>
       {% endif %}
@@ -64,14 +64,14 @@
 
   <section class="card">
     <div class="section-header">
-      <h2>Seller Performance</h2>
-      <a class="btn" href="{{ url_for('admin_users') }}">Manage Sellers</a>
+      <h2>Desempenho dos Vendedores</h2>
+      <a class="btn" href="{{ url_for('admin_users') }}">Gerenciar Vendedores</a>
     </div>
     <table class="table">
       <thead>
         <tr>
-          <th>Seller</th>
-          <th>Numbers Sold</th>
+          <th>Vendedor</th>
+          <th>Números Vendidos</th>
         </tr>
       </thead>
       <tbody>
@@ -82,7 +82,7 @@
           </tr>
         {% else %}
           <tr>
-            <td colspan="2">No sellers yet.</td>
+            <td colspan="2">Nenhum vendedor ainda.</td>
           </tr>
         {% endfor %}
       </tbody>
@@ -90,15 +90,15 @@
   </section>
 
   <section class="card">
-    <h2>Recent Sales</h2>
+    <h2>Vendas Recentes</h2>
     <table class="table">
       <thead>
         <tr>
-          <th>Number</th>
-          <th>Seller</th>
-          <th>Buyer</th>
-          <th>Phone</th>
-          <th>Sold At</th>
+          <th>Número</th>
+          <th>Vendedor</th>
+          <th>Comprador</th>
+          <th>Telefone</th>
+          <th>Vendido em</th>
         </tr>
       </thead>
       <tbody>
@@ -112,7 +112,7 @@
           </tr>
         {% else %}
           <tr>
-            <td colspan="5">No sales yet.</td>
+            <td colspan="5">Nenhuma venda ainda.</td>
           </tr>
         {% endfor %}
       </tbody>
@@ -121,16 +121,16 @@
 
   <section class="card">
     <div class="section-header">
-      <h2>Recent Audit Log</h2>
-      <a class="btn" href="{{ url_for('admin_audit') }}">Full Audit Log</a>
+      <h2>Log de Auditoria Recentes</h2>
+      <a class="btn" href="{{ url_for('admin_audit') }}">Log Completo</a>
     </div>
     <table class="table">
       <thead>
         <tr>
-          <th>Action</th>
-          <th>Number</th>
-          <th>Actor</th>
-          <th>Time (UTC)</th>
+          <th>Ação</th>
+          <th>Número</th>
+          <th>Ator</th>
+          <th>Hora (UTC)</th>
         </tr>
       </thead>
       <tbody>
@@ -138,12 +138,12 @@
           <tr>
             <td>{{ item.action }}</td>
             <td>{{ item.number or '-' }}</td>
-            <td>{{ item.actor_username or 'system' }}</td>
+            <td>{{ item.actor_username or 'sistema' }}</td>
             <td>{{ item.created_at }}</td>
           </tr>
         {% else %}
           <tr>
-            <td colspan="4">No audit entries yet.</td>
+            <td colspan="4">Nenhuma auditoria ainda.</td>
           </tr>
         {% endfor %}
       </tbody>

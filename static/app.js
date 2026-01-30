@@ -12,7 +12,7 @@
       .map((box) => box.value);
     selectedCount.textContent = String(selected.length);
     selectedPreview.textContent = selected.length
-      ? `Numbers: ${selected.slice(0, 12).join(", ")}${selected.length > 12 ? "..." : ""}`
+      ? `Números: ${selected.slice(0, 12).join(", ")}${selected.length > 12 ? "..." : ""}`
       : "";
   }
 

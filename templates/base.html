@@ -1,18 +1,18 @@
 <!doctype html>
-<html lang="en">
+<html lang="pt-BR">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Rifa Dashboard</title>
+    <title>Painel da Rifa</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
   </head>
   <body>
     <header class="site-header">
-      <div class="brand">Rifa Dashboard</div>
+      <div class="brand">Painel da Rifa</div>
       <nav class="nav">
         {% if g.user %}
-          <span class="nav-user">Logged in as {{ g.user['username'] }} ({{ g.user['role'] }})</span>
-          <a href="{{ url_for('logout') }}">Logout</a>
+          <span class="nav-user">Conectado como {{ g.user['username'] }} ({{ g.user['role'] }})</span>
+          <a href="{{ url_for('logout') }}">Sair</a>
         {% endif %}
       </nav>
     </header>

@@ -670,10 +670,9 @@ def create_app() -> Flask:
             max_number=MAX_NUMBER,
         )
 
+    app.teardown_appcontext(close_db)
+
     return app
-
-
-app = create_app()
 
 
 # Database helpers
@@ -685,7 +684,6 @@ def get_db() -> sqlite3.Connection:
     return g.db
 
 
-@app.teardown_appcontext
 def close_db(exception) -> None:
     db = g.pop("db", None)
     if db is not None:
@@ -860,10 +858,13 @@ def parse_int(value, default):
 
 def normalize_date_input(value: str, end: bool) -> str:
     if not value:
-        return \"\"
+        return ""
     if len(value) == 10:
-        return f\"{value}T23:59:59\" if end else f\"{value}T00:00:00\"
+        return f"{value}T23:59:59" if end else f"{value}T00:00:00"
     return value
+
+
+app = create_app()
 
 
 if __name__ == "__main__":
