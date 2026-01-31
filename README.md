@@ -20,7 +20,7 @@ Minimal raffle sales control system with seller logins, number locking (reservat
 1) Create a virtual environment and install dependencies:
 
 ```bash
-python3 -m venv .venv
+python3.12 -m venv .venv
 . .venv/bin/activate
 pip install -r requirements.txt
 ```
