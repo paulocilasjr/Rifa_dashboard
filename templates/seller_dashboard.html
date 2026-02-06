@@ -20,6 +20,40 @@
   </section>
 
   <section class="card">
+    <h2>Buscar Número</h2>
+    <div class="form inline-form">
+      <label class="field">
+        <span>Número (1 - {{ max_number }})</span>
+        <input
+          type="number"
+          id="search-number-input"
+          min="1"
+          max="{{ max_number }}"
+          placeholder="Buscar por número"
+        >
+      </label>
+      <button type="button" class="btn" id="search-number-btn">Buscar</button>
+    </div>
+
+    <div class="search-result" id="search-result" hidden>
+      <div>
+        <strong id="search-result-number"></strong>
+        <span class="pill" id="search-result-pill"></span>
+      </div>
+      <div class="small" id="search-result-note"></div>
+      <button
+        type="button"
+        class="btn js-select-number"
+        id="search-select-btn"
+        data-number=""
+        data-selectable="false"
+      >
+        Selecionar numero
+      </button>
+    </div>
+  </section>
+
+  <section class="card">
     <h2>Selecionar Números para Reservar ou Vender</h2>
     <div class="form inline-form">
       <label class="field">
@@ -56,7 +90,7 @@
       <div class="selection-summary">
         <span>Selecionados: <strong id="selected-count">0</strong></span>
         <span id="selected-preview" class="small"></span>
-        <button type="button" class="btn" id="clear-selection-btn">Limpar seleção</button>
+        <button type="button" class="btn" id="clear-selection-btn">Deletar selecao</button>
       </div>
 
       <div class="buyer-fields">

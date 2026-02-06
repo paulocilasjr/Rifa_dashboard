@@ -153,6 +153,13 @@
   const clearSelectionButton = document.getElementById("clear-selection-btn");
   const numberFilter = document.getElementById("number-filter");
   const numberItems = Array.from(document.querySelectorAll(".number-item[data-number]"));
+  const searchInput = document.getElementById("search-number-input");
+  const searchButton = document.getElementById("search-number-btn");
+  const searchResult = document.getElementById("search-result");
+  const searchResultNumber = document.getElementById("search-result-number");
+  const searchResultPill = document.getElementById("search-result-pill");
+  const searchResultNote = document.getElementById("search-result-note");
+  const searchSelectButton = document.getElementById("search-select-btn");
 
   let selected = loadSelection();
 
@@ -350,11 +357,121 @@
       }
       numberItems.forEach((item) => {
         const number = item.dataset.number || "";
-        item.style.display = number.includes(value) ? "" : "none";
+        item.style.display = number === value ? "" : "none";
       });
     };
     numberFilter.addEventListener("input", applyFilter);
     applyFilter();
+  }
+
+  function renderSearchResult(value) {
+    if (!searchResult || !searchResultNumber || !searchResultPill || !searchResultNote) {
+      return;
+    }
+    const raw = value.trim();
+    if (!raw) {
+      searchResult.hidden = true;
+      return;
+    }
+
+    const maxValue = searchInput ? Number(searchInput.getAttribute("max")) : null;
+    const numberValue = Number(raw);
+    searchResult.hidden = false;
+
+    const setPill = (label, className) => {
+      searchResultPill.textContent = label;
+      searchResultPill.classList.remove("sold", "reserved", "available");
+      if (className) {
+        searchResultPill.classList.add(className);
+      }
+    };
+
+    if (!Number.isInteger(numberValue) || numberValue < 1 || (maxValue && numberValue > maxValue)) {
+      searchResultNumber.textContent = "Número inválido";
+      searchResultNote.textContent = "Digite um número dentro do intervalo.";
+      setPill("Inválido", "");
+      if (searchSelectButton) {
+        searchSelectButton.dataset.selectable = "false";
+        searchSelectButton.dataset.number = "";
+        searchSelectButton.style.display = "none";
+      }
+      return;
+    }
+
+    const target = document.querySelector(
+      `.number-item[data-number="${numberValue}"]`
+    );
+    searchResultNumber.textContent = `Número ${numberValue}`;
+
+    if (!target) {
+      searchResultNote.textContent = "Número não encontrado.";
+      setPill("Indisponível", "reserved");
+      if (searchSelectButton) {
+        searchSelectButton.dataset.selectable = "false";
+        searchSelectButton.dataset.number = "";
+        searchSelectButton.style.display = "none";
+      }
+      return;
+    }
+
+    const isSold = target.classList.contains("is-sold");
+    const isReservedOther =
+      target.classList.contains("is-reserved") && !target.classList.contains("is-reserved-me");
+    const isReservedMe = target.classList.contains("is-reserved-me");
+
+    if (isSold) {
+      setPill("Vendido", "sold");
+      searchResultNote.textContent = "Este número já foi vendido.";
+      if (searchSelectButton) {
+        searchSelectButton.dataset.selectable = "false";
+        searchSelectButton.dataset.number = "";
+        searchSelectButton.style.display = "none";
+      }
+      return;
+    }
+
+    if (isReservedOther) {
+      setPill("Reservado", "reserved");
+      searchResultNote.textContent = "Reservado por outro vendedor.";
+      if (searchSelectButton) {
+        searchSelectButton.dataset.selectable = "false";
+        searchSelectButton.dataset.number = "";
+        searchSelectButton.style.display = "none";
+      }
+      return;
+    }
+
+    if (isReservedMe) {
+      setPill("Reservado", "reserved");
+      searchResultNote.textContent = "Reservado por você.";
+      if (searchSelectButton) {
+        searchSelectButton.dataset.selectable = "true";
+        searchSelectButton.dataset.number = String(numberValue);
+        searchSelectButton.style.display = "";
+      }
+      syncSearchToggles();
+      return;
+    }
+
+    setPill("Disponível", "available");
+    searchResultNote.textContent = "Número disponível para selecionar.";
+    if (searchSelectButton) {
+      searchSelectButton.dataset.selectable = "true";
+      searchSelectButton.dataset.number = String(numberValue);
+      searchSelectButton.style.display = "";
+    }
+    syncSearchToggles();
+  }
+
+  if (searchButton && searchInput) {
+    const performSearch = () => renderSearchResult(searchInput.value || "");
+    searchButton.addEventListener("click", performSearch);
+    searchInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        performSearch();
+      }
+    });
   }
 
   window.addEventListener("pagehide", () => {
