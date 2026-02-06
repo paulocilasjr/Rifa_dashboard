@@ -38,6 +38,13 @@ body {
   letter-spacing: 0.5px;
 }
 
+.version {
+  font-size: 12px;
+  font-weight: normal;
+  opacity: 0.8;
+  margin-left: 8px;
+}
+
 .nav a {
   color: #fff;
   text-decoration: none;
