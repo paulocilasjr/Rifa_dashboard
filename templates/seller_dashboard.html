@@ -36,20 +36,23 @@
     </div>
 
     <div class="search-result" id="search-result" hidden>
-      <div>
-        <strong id="search-result-number"></strong>
-        <span class="pill" id="search-result-pill"></span>
+      <div class="search-result-header">
+        <div class="search-result-title">
+          <strong id="search-result-number"></strong>
+          <span class="pill" id="search-result-pill"></span>
+        </div>
+        <button
+          type="button"
+          class="btn js-select-number"
+          id="search-select-btn"
+          data-number=""
+          data-selectable="false"
+          disabled
+        >
+          Selecionar numero
+        </button>
       </div>
       <div class="small" id="search-result-note"></div>
-      <button
-        type="button"
-        class="btn js-select-number"
-        id="search-select-btn"
-        data-number=""
-        data-selectable="false"
-      >
-        Selecionar numero
-      </button>
     </div>
   </section>
 
@@ -90,7 +93,9 @@
       <div class="selection-summary">
         <span>Selecionados: <strong id="selected-count">0</strong></span>
         <span id="selected-preview" class="small"></span>
-        <button type="button" class="btn" id="clear-selection-btn">Deletar selecao</button>
+        <button type="button" class="btn" id="clear-selection-btn" data-clear-selection="1">
+          Deletar selecao
+        </button>
       </div>
 
       <div class="buyer-fields">
@@ -107,6 +112,7 @@
       <div class="form-actions">
         <button type="submit" name="action" value="reserve" class="btn">Reservar</button>
         <button type="submit" name="action" value="sell" class="btn primary">Confirmar Venda</button>
+        <button type="button" class="btn" data-clear-selection="1">Deletar selecao</button>
       </div>
       <div class="small">Reservas duram {{ reserve_minutes }} minutos e impedem que outros vendedores vendam os mesmos números.</div>
     </form>

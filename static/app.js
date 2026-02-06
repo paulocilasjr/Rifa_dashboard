@@ -150,7 +150,9 @@
   const checkboxes = Array.from(document.querySelectorAll("input[name='numbers']"));
   const checkboxMap = new Map(checkboxes.map((box) => [box.value, box]));
   const searchToggles = Array.from(document.querySelectorAll(".js-select-number"));
-  const clearSelectionButton = document.getElementById("clear-selection-btn");
+  const clearSelectionButtons = Array.from(
+    document.querySelectorAll("[data-clear-selection=\"1\"]")
+  );
   const numberFilter = document.getElementById("number-filter");
   const numberItems = Array.from(document.querySelectorAll(".number-item[data-number]"));
   const searchInput = document.getElementById("search-number-input");
@@ -320,9 +322,9 @@
     }
   });
 
-  if (clearSelectionButton) {
-    clearSelectionButton.addEventListener("click", clearSelection);
-  }
+  clearSelectionButtons.forEach((button) => {
+    button.addEventListener("click", clearSelection);
+  });
 
   if (numbersForm) {
     numbersForm.addEventListener("submit", () => {
@@ -393,7 +395,7 @@
       if (searchSelectButton) {
         searchSelectButton.dataset.selectable = "false";
         searchSelectButton.dataset.number = "";
-        searchSelectButton.style.display = "none";
+        searchSelectButton.disabled = true;
       }
       return;
     }
@@ -409,7 +411,7 @@
       if (searchSelectButton) {
         searchSelectButton.dataset.selectable = "false";
         searchSelectButton.dataset.number = "";
-        searchSelectButton.style.display = "none";
+        searchSelectButton.disabled = true;
       }
       return;
     }
@@ -425,7 +427,7 @@
       if (searchSelectButton) {
         searchSelectButton.dataset.selectable = "false";
         searchSelectButton.dataset.number = "";
-        searchSelectButton.style.display = "none";
+        searchSelectButton.disabled = true;
       }
       return;
     }
@@ -436,7 +438,7 @@
       if (searchSelectButton) {
         searchSelectButton.dataset.selectable = "false";
         searchSelectButton.dataset.number = "";
-        searchSelectButton.style.display = "none";
+        searchSelectButton.disabled = true;
       }
       return;
     }
@@ -447,7 +449,7 @@
       if (searchSelectButton) {
         searchSelectButton.dataset.selectable = "true";
         searchSelectButton.dataset.number = String(numberValue);
-        searchSelectButton.style.display = "";
+        searchSelectButton.disabled = false;
       }
       syncSearchToggles();
       return;
@@ -458,7 +460,7 @@
     if (searchSelectButton) {
       searchSelectButton.dataset.selectable = "true";
       searchSelectButton.dataset.number = String(numberValue);
-      searchSelectButton.style.display = "";
+      searchSelectButton.disabled = false;
     }
     syncSearchToggles();
   }

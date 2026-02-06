@@ -264,6 +264,21 @@ body {
   border: 1px solid #f3d98b;
 }
 
+.search-result-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.search-result-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .search-select {
   display: inline-flex;
   align-items: center;
