@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import csv
+import io
 import json
 import os
 import sqlite3
@@ -11,6 +13,7 @@ from flask import (
     current_app,
     flash,
     g,
+    make_response,
     redirect,
     render_template,
     request,
@@ -541,6 +544,21 @@ def create_app() -> Flask:
             search_sale=search_sale,
             max_number=MAX_NUMBER,
         )
+
+    @app.route("/admin/sales/export")
+    @superuser_required
+    def export_sales():
+        rows = query_all("SELECT number, buyer_name FROM sales ORDER BY number ASC")
+        output = io.StringIO()
+        writer = csv.writer(output)
+        writer.writerow(["number", "buyer_name"])
+        for row in rows:
+            writer.writerow([row["number"], row["buyer_name"]])
+
+        response = make_response(output.getvalue())
+        response.headers["Content-Type"] = "text/csv; charset=utf-8"
+        response.headers["Content-Disposition"] = "attachment; filename=sales_export.csv"
+        return response
 
     @app.route("/admin/users", methods=["GET", "POST"])
     @superuser_required

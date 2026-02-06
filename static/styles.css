@@ -262,6 +262,14 @@ body {
   border: 1px solid #f3d98b;
 }
 
+.search-select {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 14px;
+}
+
 .pill {
   display: inline-block;
   padding: 4px 8px;

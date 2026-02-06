@@ -1,12 +1,66 @@
 (function () {
   const storageKey = "raffle:selectedNumbers";
+  const localStore = (() => {
+    try {
+      const testKey = "__raffle_test__";
+      localStorage.setItem(testKey, "1");
+      localStorage.removeItem(testKey);
+      return localStorage;
+    } catch (error) {
+      return null;
+    }
+  })();
+  const sessionStore = (() => {
+    try {
+      const testKey = "__raffle_test__";
+      sessionStorage.setItem(testKey, "1");
+      sessionStorage.removeItem(testKey);
+      return sessionStorage;
+    } catch (error) {
+      return null;
+    }
+  })();
+
+  function readStore(store) {
+    if (!store) {
+      return null;
+    }
+    try {
+      return store.getItem(storageKey);
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function writeStore(store, value) {
+    if (!store) {
+      return false;
+    }
+    try {
+      store.setItem(storageKey, value);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  function removeStore(store) {
+    if (!store) {
+      return;
+    }
+    try {
+      store.removeItem(storageKey);
+    } catch (error) {
+      // Ignore storage errors.
+    }
+  }
 
   function loadSelection() {
+    const raw = readStore(localStore) ?? readStore(sessionStore);
+    if (!raw) {
+      return new Set();
+    }
     try {
-      const raw = localStorage.getItem(storageKey);
-      if (!raw) {
-        return new Set();
-      }
       const parsed = JSON.parse(raw);
       if (!Array.isArray(parsed)) {
         return new Set();
@@ -18,19 +72,16 @@
   }
 
   function saveSelection(selected) {
-    try {
-      localStorage.setItem(storageKey, JSON.stringify(Array.from(selected)));
-    } catch (error) {
-      // Ignore storage errors (private browsing or disabled storage).
+    const payload = JSON.stringify(Array.from(selected));
+    if (writeStore(localStore, payload)) {
+      return;
     }
+    writeStore(sessionStore, payload);
   }
 
   function clearStoredSelection() {
-    try {
-      localStorage.removeItem(storageKey);
-    } catch (error) {
-      // Ignore storage errors.
-    }
+    removeStore(localStore);
+    removeStore(sessionStore);
   }
 
   const selectedCount = document.getElementById("selected-count");
@@ -38,7 +89,7 @@
   const numbersForm = document.getElementById("numbers-form");
   const checkboxes = Array.from(document.querySelectorAll("input[name='numbers']"));
   const checkboxMap = new Map(checkboxes.map((box) => [box.value, box]));
-  const searchButtons = Array.from(document.querySelectorAll(".js-select-number"));
+  const searchToggles = Array.from(document.querySelectorAll(".js-select-number"));
   const clearSelectionButton = document.getElementById("clear-selection-btn");
 
   let selected = loadSelection();
@@ -76,22 +127,34 @@
     selectedPreview.textContent = result.preview;
   }
 
-  function setSearchButtonState(button, isSelected) {
-    if (!button.dataset.defaultLabel) {
-      button.dataset.defaultLabel = button.textContent.trim();
-    }
-    button.textContent = isSelected ? "Remover da seleção" : button.dataset.defaultLabel;
-    button.classList.toggle("primary", isSelected);
+  function isCheckbox(element) {
+    return (
+      element &&
+      element.tagName === "INPUT" &&
+      element.getAttribute("type") === "checkbox"
+    );
   }
 
-  function syncSearchButtons() {
-    searchButtons.forEach((button) => {
-      const number = button.dataset.number;
+  function setSearchToggleState(toggle, isSelected) {
+    if (isCheckbox(toggle)) {
+      toggle.checked = isSelected;
+      return;
+    }
+    if (!toggle.dataset.defaultLabel) {
+      toggle.dataset.defaultLabel = toggle.textContent.trim();
+    }
+    toggle.textContent = isSelected ? "Remover da seleção" : toggle.dataset.defaultLabel;
+    toggle.classList.toggle("primary", isSelected);
+  }
+
+  function syncSearchToggles() {
+    searchToggles.forEach((toggle) => {
+      const number = toggle.dataset.number;
       if (!number) {
         return;
       }
       const isSelected = selected.has(String(number));
-      setSearchButtonState(button, isSelected);
+      setSearchToggleState(toggle, isSelected);
     });
   }
 
@@ -123,7 +186,7 @@
       box.checked = false;
     });
     updateSummary();
-    syncSearchButtons();
+    syncSearchToggles();
   }
 
   function toggleSelection(value) {
@@ -139,7 +202,7 @@
     }
     saveSelection(selected);
     updateSummary();
-    syncSearchButtons();
+    syncSearchToggles();
   }
 
   checkboxes.forEach((box) => {
@@ -151,22 +214,41 @@
       }
       saveSelection(selected);
       updateSummary();
-      syncSearchButtons();
+      syncSearchToggles();
     });
   });
 
-  searchButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      const selectable = button.dataset.selectable;
+  searchToggles.forEach((toggle) => {
+    const handler = () => {
+      const selectable = toggle.dataset.selectable;
       if (selectable === "false") {
+        if (isCheckbox(toggle)) {
+          toggle.checked = selected.has(String(toggle.dataset.number || ""));
+        }
         return;
       }
-      const number = button.dataset.number;
+      const number = toggle.dataset.number;
       if (!number) {
         return;
       }
+      if (isCheckbox(toggle)) {
+        if (toggle.checked) {
+          selected.add(String(number));
+        } else {
+          selected.delete(String(number));
+        }
+        saveSelection(selected);
+        updateSummary();
+        syncSearchToggles();
+        return;
+      }
       toggleSelection(number);
-    });
+    };
+    if (isCheckbox(toggle)) {
+      toggle.addEventListener("change", handler);
+    } else {
+      toggle.addEventListener("click", handler);
+    }
   });
 
   if (clearSelectionButton) {
@@ -195,10 +277,10 @@
     });
   }
 
-  if (checkboxes.length > 0 || searchButtons.length > 0) {
+  if (checkboxes.length > 0 || searchToggles.length > 0) {
     syncCheckboxes();
     updateSummary();
-    syncSearchButtons();
+    syncSearchToggles();
   }
 
   const modal = document.getElementById("confirm-modal");

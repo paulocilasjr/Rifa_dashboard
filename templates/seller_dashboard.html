@@ -57,27 +57,29 @@
           <span class="pill reserved">Reservado</span>
           {% if search_result.reserved_by_me %}
             <div class="small">Reservado por você até {{ search_result.reserved_until }}</div>
-            <button
-              type="button"
-              class="btn js-select-number"
-              data-number="{{ search_result.number }}"
-              data-selectable="true"
-            >
-              Adicionar à seleção
-            </button>
+            <label class="search-select">
+              <input
+                type="checkbox"
+                class="js-select-number"
+                data-number="{{ search_result.number }}"
+                data-selectable="true"
+              >
+              <span>Adicionar à seleção</span>
+            </label>
           {% else %}
             <div class="small">Reservado por outro vendedor até {{ search_result.reserved_until }}</div>
           {% endif %}
         {% else %}
           <span class="pill available">Disponível</span>
-          <button
-            type="button"
-            class="btn js-select-number"
-            data-number="{{ search_result.number }}"
-            data-selectable="true"
-          >
-            Adicionar à seleção
-          </button>
+          <label class="search-select">
+            <input
+              type="checkbox"
+              class="js-select-number"
+              data-number="{{ search_result.number }}"
+              data-selectable="true"
+            >
+            <span>Adicionar à seleção</span>
+          </label>
         {% endif %}
       </div>
     {% endif %}
