@@ -23,7 +23,7 @@ from flask import (
 from werkzeug.security import check_password_hash, generate_password_hash
 
 MAX_NUMBER = 100000
-PAGE_SIZE = 500
+PAGE_SIZE = 10000
 RESERVE_MINUTES = 15
 DEFAULT_SECRET_KEY = "casamentoguto"
 DEFAULT_SUPERUSER_USERNAME = "guto"
@@ -280,11 +280,21 @@ def create_app() -> Flask:
             "SELECT COUNT(*) FROM reservations WHERE seller_id = ?", (g.user["id"],)
         )
 
-        sold_numbers = query_all("SELECT number FROM sales")
+        page = parse_int(request.args.get("page"), 1)
+        page_count = (MAX_NUMBER + PAGE_SIZE - 1) // PAGE_SIZE
+        page = max(1, min(page, page_count))
+        start = (page - 1) * PAGE_SIZE + 1
+        end = min(page * PAGE_SIZE, MAX_NUMBER)
+
+        sold_numbers = query_all(
+            "SELECT number FROM sales WHERE number BETWEEN ? AND ?",
+            (start, end),
+        )
         sold_set = {row["number"] for row in sold_numbers}
 
         reservation_rows = query_all(
-            "SELECT number, seller_id FROM reservations",
+            "SELECT number, seller_id FROM reservations WHERE number BETWEEN ? AND ?",
+            (start, end),
         )
         reserved_by_me = {row["number"] for row in reservation_rows if row["seller_id"] == g.user["id"]}
         reserved_by_other = {
@@ -292,7 +302,7 @@ def create_app() -> Flask:
         }
 
         numbers = []
-        for number in range(1, MAX_NUMBER + 1):
+        for number in range(start, end + 1):
             numbers.append(
                 {
                     "number": number,
@@ -312,6 +322,11 @@ def create_app() -> Flask:
             total_sold=total_sold,
             total_reserved=total_reserved,
             numbers=numbers,
+            page=page,
+            page_count=page_count,
+            page_size=PAGE_SIZE,
+            start=start,
+            end=end,
             max_number=MAX_NUMBER,
             my_reservations=my_reservations,
             reserve_minutes=RESERVE_MINUTES,

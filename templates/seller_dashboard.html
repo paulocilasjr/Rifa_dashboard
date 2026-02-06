@@ -14,7 +14,7 @@
       </div>
       <div>
         <div class="stat-label">Intervalo</div>
-        <div class="stat-value">1 - {{ max_number }}</div>
+        <div class="stat-value">{{ start }} - {{ end }}</div>
       </div>
     </div>
   </section>
@@ -29,6 +29,8 @@
           id="search-number-input"
           min="1"
           max="{{ max_number }}"
+          data-page-size="{{ page_size }}"
+          data-page-count="{{ page_count }}"
           placeholder="Buscar por número"
         >
       </label>
@@ -58,6 +60,13 @@
 
   <section class="card">
     <h2>Selecionar Números para Reservar ou Vender</h2>
+    <div class="page-controls">
+      <a class="btn" href="{{ url_for('seller_dashboard', page=1) }}">Primeira</a>
+      <a class="btn" href="{{ url_for('seller_dashboard', page=page-1 if page > 1 else 1) }}">Anterior</a>
+      <span>Página {{ page }} de {{ page_count }}</span>
+      <a class="btn" href="{{ url_for('seller_dashboard', page=page+1 if page < page_count else page_count) }}">Próxima</a>
+      <a class="btn" href="{{ url_for('seller_dashboard', page=page_count) }}">Última</a>
+    </div>
     <div class="form inline-form">
       <label class="field">
         <span>Buscar número</span>
@@ -112,7 +121,6 @@
       <div class="form-actions">
         <button type="submit" name="action" value="reserve" class="btn">Reservar</button>
         <button type="submit" name="action" value="sell" class="btn primary">Confirmar Venda</button>
-        <button type="button" class="btn" data-clear-selection="1">Deletar selecao</button>
       </div>
       <div class="small">Reservas duram {{ reserve_minutes }} minutos e impedem que outros vendedores vendam os mesmos números.</div>
     </form>

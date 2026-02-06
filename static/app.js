@@ -465,8 +465,41 @@
     syncSearchToggles();
   }
 
+  function navigateToNumber(numberValue) {
+    if (!searchInput) {
+      return;
+    }
+    const pageSize = Number(searchInput.dataset.pageSize || "0");
+    if (!pageSize || !Number.isFinite(pageSize)) {
+      return;
+    }
+    const targetPage = Math.floor((numberValue - 1) / pageSize) + 1;
+    const params = new URLSearchParams(window.location.search);
+    params.set("page", String(targetPage));
+    params.set("search", String(numberValue));
+    window.location.search = params.toString();
+  }
+
   if (searchButton && searchInput) {
-    const performSearch = () => renderSearchResult(searchInput.value || "");
+    const performSearch = () => {
+      const raw = searchInput.value || "";
+      const value = raw.trim();
+      if (!value) {
+        renderSearchResult("");
+        return;
+      }
+      const numberValue = Number(value);
+      if (Number.isInteger(numberValue) && numberValue >= 1) {
+        const target = document.querySelector(
+          `.number-item[data-number="${numberValue}"]`
+        );
+        if (!target) {
+          navigateToNumber(numberValue);
+          return;
+        }
+      }
+      renderSearchResult(value);
+    };
     searchButton.addEventListener("click", performSearch);
     searchInput.addEventListener("keydown", (event) => {
       if (event.key === "Enter") {
@@ -474,6 +507,17 @@
         performSearch();
       }
     });
+    const params = new URLSearchParams(window.location.search);
+    const initialSearch = params.get("search");
+    if (initialSearch) {
+      searchInput.value = initialSearch;
+      renderSearchResult(initialSearch);
+      if (numberFilter) {
+        numberFilter.value = initialSearch;
+        const inputEvent = new Event("input", { bubbles: true });
+        numberFilter.dispatchEvent(inputEvent);
+      }
+    }
   }
 
   window.addEventListener("pagehide", () => {
