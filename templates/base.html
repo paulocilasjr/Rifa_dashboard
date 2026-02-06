@@ -31,7 +31,7 @@
       {% block content %}{% endblock %}
     </main>
 
-    {% if g.user %}
+    {% if g.user and g.user['role'] == 'superuser' %}
       <div class="modal" id="confirm-modal" aria-hidden="true">
         <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
           <h3 id="confirm-title">Confirmar ação</h3>

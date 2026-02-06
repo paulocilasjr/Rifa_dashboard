@@ -130,9 +130,11 @@
   function saveSelection(selected) {
     const payload = JSON.stringify(Array.from(selected));
     if (writeStore(localStore, payload)) {
+      writeWindowName(payload);
       return;
     }
     if (writeStore(sessionStore, payload)) {
+      writeWindowName(payload);
       return;
     }
     writeWindowName(payload);
@@ -164,6 +166,9 @@
   const searchSelectButton = document.getElementById("search-select-btn");
 
   let selected = loadSelection();
+  if (selected.size > 0) {
+    saveSelection(selected);
+  }
 
   const params = new URLSearchParams(window.location.search);
   if (params.get("clear_selection") === "1") {
@@ -326,6 +331,22 @@
     button.addEventListener("click", clearSelection);
   });
 
+  document.addEventListener("click", (event) => {
+    const target = event.target.closest("[data-clear-selection=\"1\"]");
+    if (!target) {
+      return;
+    }
+    event.preventDefault();
+    clearSelection();
+  });
+
+  const pageLinks = Array.from(document.querySelectorAll(".page-controls a"));
+  pageLinks.forEach((link) => {
+    link.addEventListener("click", () => {
+      saveSelection(selected);
+    });
+  });
+
   if (numbersForm) {
     numbersForm.addEventListener("submit", () => {
       numbersForm
@@ -363,6 +384,25 @@
       });
     };
     numberFilter.addEventListener("input", applyFilter);
+    numberFilter.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter") {
+        return;
+      }
+      const value = numberFilter.value.trim();
+      if (!value) {
+        return;
+      }
+      const numberValue = Number(value);
+      if (!Number.isInteger(numberValue) || numberValue < 1) {
+        return;
+      }
+      const target = document.querySelector(
+        `.number-item[data-number="${numberValue}"]`
+      );
+      if (!target) {
+        navigateToNumber(numberValue);
+      }
+    });
     applyFilter();
   }
 
