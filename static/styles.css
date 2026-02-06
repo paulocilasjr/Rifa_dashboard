@@ -202,22 +202,24 @@ body {
 }
 
 .number-item.is-sold {
-  opacity: 0.45;
+  opacity: 0.75;
   text-decoration: line-through;
   cursor: not-allowed;
-  background: #f0f0f0;
+  background: #f8d7da;
+  border-color: #f5c2c7;
+  color: #7a1c1c;
 }
 
 .number-item.is-reserved {
-  border-color: #f3d98b;
-  background: #fff6d7;
-  opacity: 0.7;
+  border-color: #ffe08a;
+  background: #fff3cd;
+  opacity: 0.85;
   cursor: not-allowed;
 }
 
 .number-item.is-reserved-me {
-  border-color: #f3d98b;
-  background: #fff8e4;
+  border-color: #ffe08a;
+  background: #fff3cd;
 }
 
 .selection-summary {

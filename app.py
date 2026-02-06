@@ -280,64 +280,19 @@ def create_app() -> Flask:
             "SELECT COUNT(*) FROM reservations WHERE seller_id = ?", (g.user["id"],)
         )
 
-        page = parse_int(request.args.get("page"), 1)
-        page_count = (MAX_NUMBER + PAGE_SIZE - 1) // PAGE_SIZE
-        page = max(1, min(page, page_count))
-        start = (page - 1) * PAGE_SIZE + 1
-        end = min(page * PAGE_SIZE, MAX_NUMBER)
-
-        sold_numbers = query_all(
-            "SELECT number FROM sales WHERE number BETWEEN ? AND ?",
-            (start, end),
-        )
+        sold_numbers = query_all("SELECT number FROM sales")
         sold_set = {row["number"] for row in sold_numbers}
 
         reservation_rows = query_all(
-            "SELECT number, seller_id FROM reservations WHERE number BETWEEN ? AND ?",
-            (start, end),
+            "SELECT number, seller_id FROM reservations",
         )
         reserved_by_me = {row["number"] for row in reservation_rows if row["seller_id"] == g.user["id"]}
         reserved_by_other = {
             row["number"] for row in reservation_rows if row["seller_id"] != g.user["id"]
         }
 
-        search_number = parse_int(request.args.get("number"), None)
-        search_result = None
-        if search_number is not None:
-            if 1 <= search_number <= MAX_NUMBER:
-                sale = query_one(
-                    "SELECT number, seller_id, buyer_name, buyer_phone, sold_at "
-                    "FROM sales WHERE number = ?",
-                    (search_number,),
-                )
-                if sale:
-                    search_result = {
-                        "status": "sold",
-                        "number": search_number,
-                        "buyer_name": sale["buyer_name"],
-                        "buyer_phone": sale["buyer_phone"],
-                        "sold_at": sale["sold_at"],
-                        "can_edit": sale["seller_id"] == g.user["id"],
-                    }
-                else:
-                    reservation = query_one(
-                        "SELECT number, seller_id, reserved_until FROM reservations WHERE number = ?",
-                        (search_number,),
-                    )
-                    if reservation:
-                        search_result = {
-                            "status": "reserved",
-                            "number": search_number,
-                            "reserved_until": reservation["reserved_until"],
-                            "reserved_by_me": reservation["seller_id"] == g.user["id"],
-                        }
-                    else:
-                        search_result = {"status": "available", "number": search_number}
-            else:
-                flash("Search number is out of range.", "error")
-
         numbers = []
-        for number in range(start, end + 1):
+        for number in range(1, MAX_NUMBER + 1):
             numbers.append(
                 {
                     "number": number,
@@ -357,12 +312,7 @@ def create_app() -> Flask:
             total_sold=total_sold,
             total_reserved=total_reserved,
             numbers=numbers,
-            page=page,
-            page_count=page_count,
-            start=start,
-            end=end,
             max_number=MAX_NUMBER,
-            search_result=search_result,
             my_reservations=my_reservations,
             reserve_minutes=RESERVE_MINUTES,
         )

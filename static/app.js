@@ -1,5 +1,6 @@
 (function () {
   const storageKey = "raffle:selectedNumbers";
+  const windowNameKey = "raffle_selected_numbers";
   const localStore = (() => {
     try {
       const testKey = "__raffle_test__";
@@ -20,6 +21,61 @@
       return null;
     }
   })();
+
+  function readWindowName() {
+    try {
+      if (!window.name) {
+        return null;
+      }
+      const parsed = JSON.parse(window.name);
+      if (!parsed || typeof parsed !== "object") {
+        return null;
+      }
+      return parsed[windowNameKey] ?? null;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function writeWindowName(value) {
+    try {
+      let parsed = {};
+      if (window.name) {
+        parsed = JSON.parse(window.name);
+        if (!parsed || typeof parsed !== "object") {
+          parsed = {};
+        }
+      }
+      parsed[windowNameKey] = value;
+      window.name = JSON.stringify(parsed);
+      return true;
+    } catch (error) {
+      try {
+        window.name = JSON.stringify({ [windowNameKey]: value });
+        return true;
+      } catch (errorInner) {
+        return false;
+      }
+    }
+  }
+
+  function removeWindowName() {
+    try {
+      if (!window.name) {
+        return;
+      }
+      const parsed = JSON.parse(window.name);
+      if (!parsed || typeof parsed !== "object") {
+        return;
+      }
+      if (windowNameKey in parsed) {
+        delete parsed[windowNameKey];
+        window.name = JSON.stringify(parsed);
+      }
+    } catch (error) {
+      // Ignore window.name errors.
+    }
+  }
 
   function readStore(store) {
     if (!store) {
@@ -56,7 +112,7 @@
   }
 
   function loadSelection() {
-    const raw = readStore(localStore) ?? readStore(sessionStore);
+    const raw = readStore(localStore) ?? readStore(sessionStore) ?? readWindowName();
     if (!raw) {
       return new Set();
     }
@@ -76,12 +132,16 @@
     if (writeStore(localStore, payload)) {
       return;
     }
-    writeStore(sessionStore, payload);
+    if (writeStore(sessionStore, payload)) {
+      return;
+    }
+    writeWindowName(payload);
   }
 
   function clearStoredSelection() {
     removeStore(localStore);
     removeStore(sessionStore);
+    removeWindowName();
   }
 
   const selectedCount = document.getElementById("selected-count");
@@ -91,6 +151,8 @@
   const checkboxMap = new Map(checkboxes.map((box) => [box.value, box]));
   const searchToggles = Array.from(document.querySelectorAll(".js-select-number"));
   const clearSelectionButton = document.getElementById("clear-selection-btn");
+  const numberFilter = document.getElementById("number-filter");
+  const numberItems = Array.from(document.querySelectorAll(".number-item[data-number]"));
 
   let selected = loadSelection();
 
@@ -276,6 +338,28 @@
       });
     });
   }
+
+  if (numberFilter) {
+    const applyFilter = () => {
+      const value = numberFilter.value.trim();
+      if (!value) {
+        numberItems.forEach((item) => {
+          item.style.display = "";
+        });
+        return;
+      }
+      numberItems.forEach((item) => {
+        const number = item.dataset.number || "";
+        item.style.display = number.includes(value) ? "" : "none";
+      });
+    };
+    numberFilter.addEventListener("input", applyFilter);
+    applyFilter();
+  }
+
+  window.addEventListener("pagehide", () => {
+    saveSelection(selected);
+  });
 
   if (checkboxes.length > 0 || searchToggles.length > 0) {
     syncCheckboxes();

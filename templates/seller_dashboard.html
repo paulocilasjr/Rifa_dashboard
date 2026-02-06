@@ -13,86 +13,25 @@
         <div class="stat-value">{{ total_reserved }}</div>
       </div>
       <div>
-        <div class="stat-label">Intervalo Atual</div>
-        <div class="stat-value">{{ start }} - {{ end }}</div>
+        <div class="stat-label">Intervalo</div>
+        <div class="stat-value">1 - {{ max_number }}</div>
       </div>
     </div>
   </section>
 
   <section class="card">
-    <h2>Buscar Número</h2>
-    <form method="get" class="form inline-form">
-      <label class="field">
-        <span>Número (1 - {{ max_number }})</span>
-        <input type="number" name="number" min="1" max="{{ max_number }}" placeholder="Buscar por número">
-      </label>
-      <button type="submit" class="btn">Buscar</button>
-    </form>
-
-    {% if search_result %}
-      <div class="search-result">
-        <strong>Número {{ search_result.number }}</strong>
-        {% if search_result.status == 'sold' %}
-          <span class="pill sold">Vendido</span>
-          <div class="small">Comprador: {{ search_result.buyer_name }} | Telefone: {{ search_result.buyer_phone }}</div>
-          <div class="small">Vendido em: {{ search_result.sold_at }}</div>
-          {% if search_result.can_edit %}
-            <form method="post" action="{{ url_for('edit_sale', number=search_result.number) }}" class="inline-form">
-              <input type="text" name="buyer_name" placeholder="Nome do comprador" required>
-              <input type="text" name="buyer_phone" placeholder="Telefone do comprador" required>
-              <button type="submit" class="btn">Editar Venda</button>
-            </form>
-            <button
-              type="button"
-              class="btn danger js-confirm"
-              data-confirm-action="{{ url_for('void_sale', number=search_result.number) }}"
-              data-confirm-title="Cancelar venda"
-              data-confirm-message="Deseja cancelar a venda do número {{ search_result.number }}?"
-              data-confirm-submit="Cancelar venda"
-            >
-              Cancelar Venda
-            </button>
-          {% endif %}
-        {% elif search_result.status == 'reserved' %}
-          <span class="pill reserved">Reservado</span>
-          {% if search_result.reserved_by_me %}
-            <div class="small">Reservado por você até {{ search_result.reserved_until }}</div>
-            <label class="search-select">
-              <input
-                type="checkbox"
-                class="js-select-number"
-                data-number="{{ search_result.number }}"
-                data-selectable="true"
-              >
-              <span>Adicionar à seleção</span>
-            </label>
-          {% else %}
-            <div class="small">Reservado por outro vendedor até {{ search_result.reserved_until }}</div>
-          {% endif %}
-        {% else %}
-          <span class="pill available">Disponível</span>
-          <label class="search-select">
-            <input
-              type="checkbox"
-              class="js-select-number"
-              data-number="{{ search_result.number }}"
-              data-selectable="true"
-            >
-            <span>Adicionar à seleção</span>
-          </label>
-        {% endif %}
-      </div>
-    {% endif %}
-  </section>
-
-  <section class="card">
     <h2>Selecionar Números para Reservar ou Vender</h2>
-    <div class="page-controls">
-      <a class="btn" href="{{ url_for('seller_dashboard', page=1) }}">Primeira</a>
-      <a class="btn" href="{{ url_for('seller_dashboard', page=page-1 if page > 1 else 1) }}">Anterior</a>
-      <span>Página {{ page }} de {{ page_count }}</span>
-      <a class="btn" href="{{ url_for('seller_dashboard', page=page+1 if page < page_count else page_count) }}">Próxima</a>
-      <a class="btn" href="{{ url_for('seller_dashboard', page=page_count) }}">Última</a>
+    <div class="form inline-form">
+      <label class="field">
+        <span>Buscar número</span>
+        <input
+          type="number"
+          id="number-filter"
+          min="1"
+          max="{{ max_number }}"
+          placeholder="Digite para filtrar"
+        >
+      </label>
     </div>
 
     <form method="post" class="form" id="numbers-form">
@@ -102,7 +41,7 @@
             {% if item.sold %}is-sold{% endif %}
             {% if item.reserved_by_other %}is-reserved{% endif %}
             {% if item.reserved_by_me %}is-reserved-me{% endif %}
-          ">
+          " data-number="{{ item.number }}">
             <input
               type="checkbox"
               name="numbers"
