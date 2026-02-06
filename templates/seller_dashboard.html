@@ -42,19 +42,42 @@
               <input type="text" name="buyer_phone" placeholder="Telefone do comprador" required>
               <button type="submit" class="btn">Editar Venda</button>
             </form>
-            <form method="post" action="{{ url_for('void_sale', number=search_result.number) }}" class="inline-form">
-              <button type="submit" class="btn danger">Cancelar Venda</button>
-            </form>
+            <button
+              type="button"
+              class="btn danger js-confirm"
+              data-confirm-action="{{ url_for('void_sale', number=search_result.number) }}"
+              data-confirm-title="Cancelar venda"
+              data-confirm-message="Deseja cancelar a venda do número {{ search_result.number }}?"
+              data-confirm-submit="Cancelar venda"
+            >
+              Cancelar Venda
+            </button>
           {% endif %}
         {% elif search_result.status == 'reserved' %}
           <span class="pill reserved">Reservado</span>
           {% if search_result.reserved_by_me %}
             <div class="small">Reservado por você até {{ search_result.reserved_until }}</div>
+            <button
+              type="button"
+              class="btn js-select-number"
+              data-number="{{ search_result.number }}"
+              data-selectable="true"
+            >
+              Adicionar à seleção
+            </button>
           {% else %}
             <div class="small">Reservado por outro vendedor até {{ search_result.reserved_until }}</div>
           {% endif %}
         {% else %}
           <span class="pill available">Disponível</span>
+          <button
+            type="button"
+            class="btn js-select-number"
+            data-number="{{ search_result.number }}"
+            data-selectable="true"
+          >
+            Adicionar à seleção
+          </button>
         {% endif %}
       </div>
     {% endif %}
@@ -70,7 +93,7 @@
       <a class="btn" href="{{ url_for('seller_dashboard', page=page_count) }}">Última</a>
     </div>
 
-    <form method="post" class="form">
+    <form method="post" class="form" id="numbers-form">
       <div class="numbers-grid">
         {% for item in numbers %}
           <label class="number-item
@@ -92,6 +115,7 @@
       <div class="selection-summary">
         <span>Selecionados: <strong id="selected-count">0</strong></span>
         <span id="selected-preview" class="small"></span>
+        <button type="button" class="btn" id="clear-selection-btn">Limpar seleção</button>
       </div>
 
       <div class="buyer-fields">

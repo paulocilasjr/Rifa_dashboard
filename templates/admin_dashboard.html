@@ -54,9 +54,16 @@
             <input type="text" name="buyer_phone" placeholder="Telefone do comprador" required>
             <button type="submit" class="btn">Editar Venda</button>
           </form>
-          <form method="post" action="{{ url_for('void_sale', number=search_sale.number) }}" class="inline-form">
-            <button type="submit" class="btn danger">Cancelar Venda</button>
-          </form>
+          <button
+            type="button"
+            class="btn danger js-confirm"
+            data-confirm-action="{{ url_for('void_sale', number=search_sale.number) }}"
+            data-confirm-title="Cancelar venda"
+            data-confirm-message="Deseja cancelar a venda do número {{ search_sale.number }}?"
+            data-confirm-submit="Cancelar venda"
+          >
+            Cancelar Venda
+          </button>
         </div>
       {% endif %}
     {% endif %}
@@ -99,6 +106,7 @@
           <th>Comprador</th>
           <th>Telefone</th>
           <th>Vendido em</th>
+          <th>Ação</th>
         </tr>
       </thead>
       <tbody>
@@ -109,10 +117,22 @@
             <td>{{ sale.buyer_name }}</td>
             <td>{{ sale.buyer_phone }}</td>
             <td>{{ sale.sold_at }}</td>
+            <td>
+              <button
+                type="button"
+                class="btn danger js-confirm"
+                data-confirm-action="{{ url_for('void_sale', number=sale.number) }}"
+                data-confirm-title="Excluir venda"
+                data-confirm-message="Deseja excluir a venda do número {{ sale.number }}?"
+                data-confirm-submit="Excluir"
+              >
+                Excluir
+              </button>
+            </td>
           </tr>
         {% else %}
           <tr>
-            <td colspan="5">Nenhuma venda ainda.</td>
+            <td colspan="6">Nenhuma venda ainda.</td>
           </tr>
         {% endfor %}
       </tbody>

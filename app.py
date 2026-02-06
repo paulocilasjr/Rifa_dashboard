@@ -124,6 +124,7 @@ def create_app() -> Flask:
             selected_numbers = request.form.getlist("numbers")
             buyer_name = request.form.get("buyer_name", "").strip()
             buyer_phone = request.form.get("buyer_phone", "").strip()
+            clear_selection = False
 
             error = None
             if not selected_numbers:
@@ -204,6 +205,7 @@ def create_app() -> Flask:
                                 f"Reserved {len(numbers)} number(s) for {RESERVE_MINUTES} minutes.",
                                 "success",
                             )
+                            clear_selection = True
 
                     else:
                         for number in numbers:
@@ -250,6 +252,7 @@ def create_app() -> Flask:
 
                             db.commit()
                             flash(f"Sold {len(numbers)} number(s).", "success")
+                            clear_selection = True
 
                 except sqlite3.IntegrityError:
                     db.rollback()
@@ -263,6 +266,8 @@ def create_app() -> Flask:
 
             if error:
                 flash(error, "error")
+            if clear_selection:
+                return redirect(url_for("seller_dashboard", clear_selection=1))
             return redirect(url_for("seller_dashboard"))
 
         total_sold = query_value(
@@ -550,8 +555,10 @@ def create_app() -> Flask:
                 error = "Password should be at least 6 characters."
 
             if error is None:
+                db = get_db()
                 try:
-                    execute(
+                    db.execute("BEGIN")
+                    cursor = db.execute(
                         "INSERT INTO users (username, password_hash, role, created_at) VALUES (?, ?, ?, ?)",
                         (
                             username,
@@ -560,18 +567,71 @@ def create_app() -> Flask:
                             now_ts(),
                         ),
                     )
+                    seller_id = cursor.lastrowid
+                    log_audit(
+                        "seller_create",
+                        g.user["id"],
+                        seller_id=seller_id,
+                        details={"username": username},
+                        db=db,
+                    )
+                    db.commit()
                     flash(f"Seller '{username}' created.", "success")
                     return redirect(url_for("admin_users"))
                 except sqlite3.IntegrityError:
+                    db.rollback()
                     error = "Username already exists."
+                except sqlite3.Error:
+                    db.rollback()
+                    error = "Database error. Please try again."
 
             if error:
                 flash(error, "error")
 
         sellers = query_all(
-            "SELECT id, username, created_at FROM users WHERE role = 'seller' ORDER BY username"
+            "SELECT u.id, u.username, u.created_at, "
+            "(SELECT COUNT(*) FROM sales s WHERE s.seller_id = u.id) AS sold_count, "
+            "(SELECT COUNT(*) FROM reservations r WHERE r.seller_id = u.id) AS reserved_count "
+            "FROM users u WHERE u.role = 'seller' ORDER BY u.username"
         )
         return render_template("admin_users.html", sellers=sellers)
+
+    @app.route("/admin/users/<int:user_id>/delete", methods=["POST"])
+    @superuser_required
+    def delete_seller(user_id: int):
+        seller = query_one(
+            "SELECT id, username FROM users WHERE id = ? AND role = 'seller'",
+            (user_id,),
+        )
+        if not seller:
+            flash("Seller not found.", "error")
+            return redirect(url_for("admin_users"))
+
+        sold_count = query_value("SELECT COUNT(*) FROM sales WHERE seller_id = ?", (user_id,))
+        reserved_count = query_value(
+            "SELECT COUNT(*) FROM reservations WHERE seller_id = ?", (user_id,)
+        )
+        if sold_count or reserved_count:
+            flash("Seller has sales or reservations and cannot be deleted.", "error")
+            return redirect(url_for("admin_users"))
+
+        db = get_db()
+        try:
+            db.execute("BEGIN")
+            db.execute("DELETE FROM users WHERE id = ?", (user_id,))
+            log_audit(
+                "seller_delete",
+                g.user["id"],
+                seller_id=user_id,
+                details={"username": seller["username"]},
+                db=db,
+            )
+            db.commit()
+            flash(f"Seller '{seller['username']}' deleted.", "success")
+        except sqlite3.Error:
+            db.rollback()
+            flash("Database error. Please try again.", "error")
+        return redirect(url_for("admin_users"))
 
     @app.route("/admin/audit")
     @superuser_required

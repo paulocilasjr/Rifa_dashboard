@@ -31,6 +31,19 @@
       {% block content %}{% endblock %}
     </main>
 
+    <div class="modal" id="confirm-modal" aria-hidden="true">
+      <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+        <h3 id="confirm-title">Confirmar ação</h3>
+        <p id="confirm-message" class="small"></p>
+        <form id="confirm-form" method="post">
+          <div class="modal-actions">
+            <button type="button" class="btn" data-modal-cancel>Cancelar</button>
+            <button type="submit" class="btn danger" id="confirm-submit">Confirmar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
     <script src="{{ url_for('static', filename='app.js') }}"></script>
   </body>
 </html>

@@ -28,6 +28,9 @@
         <tr>
           <th>Usuário</th>
           <th>Criado em</th>
+          <th>Vendas</th>
+          <th>Reservas</th>
+          <th>Ação</th>
         </tr>
       </thead>
       <tbody>
@@ -35,10 +38,28 @@
           <tr>
             <td>{{ seller.username }}</td>
             <td>{{ seller.created_at }}</td>
+            <td>{{ seller.sold_count }}</td>
+            <td>{{ seller.reserved_count }}</td>
+            <td>
+              {% if seller.sold_count == 0 and seller.reserved_count == 0 %}
+                <button
+                  type="button"
+                  class="btn danger js-confirm"
+                  data-confirm-action="{{ url_for('delete_seller', user_id=seller.id) }}"
+                  data-confirm-title="Excluir vendedor"
+                  data-confirm-message="Deseja excluir o vendedor {{ seller.username }}?"
+                  data-confirm-submit="Excluir"
+                >
+                  Excluir
+                </button>
+              {% else %}
+                <button type="button" class="btn" disabled>Indisponível</button>
+              {% endif %}
+            </td>
           </tr>
         {% else %}
           <tr>
-            <td colspan="2">Nenhum vendedor criado.</td>
+            <td colspan="5">Nenhum vendedor criado.</td>
           </tr>
         {% endfor %}
       </tbody>
