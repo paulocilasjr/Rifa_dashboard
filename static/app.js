@@ -164,6 +164,8 @@
   const searchResultPill = document.getElementById("search-result-pill");
   const searchResultNote = document.getElementById("search-result-note");
   const searchSelectButton = document.getElementById("search-select-btn");
+  const findAvailableButton = document.getElementById("find-available-btn");
+  const availablePreview = document.getElementById("available-preview");
 
   let selected = loadSelection();
   if (selected.size > 0) {
@@ -263,6 +265,9 @@
     });
     updateSummary();
     syncSearchToggles();
+    if (availablePreview) {
+      availablePreview.textContent = "";
+    }
   }
 
   function toggleSelection(value) {
@@ -364,6 +369,79 @@
           input.value = value;
           input.dataset.selectedHidden = "1";
           numbersForm.appendChild(input);
+        }
+      });
+    });
+  }
+
+  function copyTextToClipboard(text) {
+    if (!text) {
+      return Promise.resolve(false);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(text).then(
+        () => true,
+        () => false
+      );
+    }
+    return new Promise((resolve) => {
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      textarea.setAttribute("readonly", "true");
+      textarea.style.position = "fixed";
+      textarea.style.left = "-9999px";
+      document.body.appendChild(textarea);
+      textarea.select();
+      let success = false;
+      try {
+        success = document.execCommand("copy");
+      } catch (error) {
+        success = false;
+      }
+      document.body.removeChild(textarea);
+      resolve(success);
+    });
+  }
+
+  if (findAvailableButton) {
+    findAvailableButton.addEventListener("click", () => {
+      const found = [];
+      const items = numberItems.length
+        ? numberItems
+        : Array.from(document.querySelectorAll(".number-item[data-number]"));
+      for (const item of items) {
+        if (item.offsetParent === null) {
+          continue;
+        }
+        const number = item.dataset.number;
+        if (!number) {
+          continue;
+        }
+        const input = item.querySelector("input[name='numbers']");
+        if (!input || input.disabled) {
+          continue;
+        }
+        if (selected.has(String(number))) {
+          continue;
+        }
+        found.push(number);
+        if (found.length >= 100) {
+          break;
+        }
+      }
+      const text = found.join(", ");
+      if (!text) {
+        return;
+      }
+      copyTextToClipboard(text).then((ok) => {
+        if (!findAvailableButton) {
+          return;
+        }
+        if (ok) {
+          findAvailableButton.textContent = "Números copiados";
+          findAvailableButton.classList.remove("success");
+        } else {
+          findAvailableButton.textContent = "Copie manualmente";
         }
       });
     });

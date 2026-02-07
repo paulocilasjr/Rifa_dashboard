@@ -61,6 +61,12 @@
 
   <section class="card">
     <h2>Selecionar Números para Reservar ou Vender</h2>
+    <div class="form-actions align-right">
+      <button type="button" class="btn success" id="find-available-btn">
+        Buscar 100 disponíveis
+      </button>
+      <span class="small" id="available-preview"></span>
+    </div>
     <div class="page-controls">
       <a class="btn" href="{{ url_for('seller_dashboard', page=1) }}">Primeira</a>
       <a class="btn" href="{{ url_for('seller_dashboard', page=page-1 if page > 1 else 1) }}">Anterior</a>
